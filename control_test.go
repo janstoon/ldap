@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"testing"
 
-	"gopkg.in/asn1-ber.v1"
+	ber "gopkg.in/asn1-ber.v1"
 )
 
 func TestControlPaging(t *testing.T) {
@@ -18,6 +18,14 @@ func TestControlPaging(t *testing.T) {
 func TestControlManageDsaIT(t *testing.T) {
 	runControlTest(t, NewControlManageDsaIT(true))
 	runControlTest(t, NewControlManageDsaIT(false))
+}
+
+func TestControlMicrosoftNotification(t *testing.T) {
+	runControlTest(t, NewControlMicrosoftNotification())
+}
+
+func TestControlMicrosoftShowDeleted(t *testing.T) {
+	runControlTest(t, NewControlMicrosoftShowDeleted())
 }
 
 func TestControlString(t *testing.T) {
@@ -39,7 +47,10 @@ func runControlTest(t *testing.T, originalControl Control) {
 	encodedBytes := encodedPacket.Bytes()
 
 	// Decode directly from the encoded packet (ensures Value is correct)
-	fromPacket := DecodeControl(encodedPacket)
+	fromPacket, err := DecodeControl(encodedPacket)
+	if err != nil {
+		t.Errorf("%sdecoding encoded bytes control failed: %s", header, err)
+	}
 	if !bytes.Equal(encodedBytes, fromPacket.Encode().Bytes()) {
 		t.Errorf("%sround-trip from encoded packet failed", header)
 	}
@@ -48,7 +59,14 @@ func runControlTest(t *testing.T, originalControl Control) {
 	}
 
 	// Decode from the wire bytes (ensures ber-encoding is correct)
-	fromBytes := DecodeControl(ber.DecodePacket(encodedBytes))
+	pkt, err := ber.DecodePacketErr(encodedBytes)
+	if err != nil {
+		t.Errorf("%sdecoding encoded bytes failed: %s", header, err)
+	}
+	fromBytes, err := DecodeControl(pkt)
+	if err != nil {
+		t.Errorf("%sdecoding control failed: %s", header, err)
+	}
 	if !bytes.Equal(encodedBytes, fromBytes.Encode().Bytes()) {
 		t.Errorf("%sround-trip from encoded bytes failed", header)
 	}
@@ -67,11 +85,19 @@ func TestDescribeControlPaging(t *testing.T) {
 	runAddControlDescriptions(t, NewControlPaging(0), "Control Type (Paging)", "Control Value (Paging)")
 }
 
+func TestDescribeControlMicrosoftNotification(t *testing.T) {
+	runAddControlDescriptions(t, NewControlMicrosoftNotification(), "Control Type (Change Notification - Microsoft)")
+}
+
+func TestDescribeControlMicrosoftShowDeleted(t *testing.T) {
+	runAddControlDescriptions(t, NewControlMicrosoftShowDeleted(), "Control Type (Show Deleted Objects - Microsoft)")
+}
+
 func TestDescribeControlString(t *testing.T) {
 	runAddControlDescriptions(t, NewControlString("x", true, "y"), "Control Type ()", "Criticality", "Control Value")
-	runAddControlDescriptions(t, NewControlString("x", true, ""), "Control Type ()", "Criticality", "Control Value")
+	runAddControlDescriptions(t, NewControlString("x", true, ""), "Control Type ()", "Criticality")
 	runAddControlDescriptions(t, NewControlString("x", false, "y"), "Control Type ()", "Control Value")
-	runAddControlDescriptions(t, NewControlString("x", false, ""), "Control Type ()", "Control Value")
+	runAddControlDescriptions(t, NewControlString("x", false, ""), "Control Type ()")
 }
 
 func runAddControlDescriptions(t *testing.T, originalControl Control, childDescriptions ...string) {
