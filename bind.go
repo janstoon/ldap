@@ -252,12 +252,8 @@ func (l *Conn) startSaslBind(mechanism SaslMechanism) (*saslStartResult, error) 
 
 	l.Debug.Printf("Result: %#v", result)
 
-	resultCode, resultDescription := getLDAPResultCode(packet)
-	if resultCode != 0 {
-		return result, NewError(resultCode, errors.New(resultDescription))
-	}
-
-	return result, nil
+	err = GetLDAPError(packet)
+	return result, err
 }
 
 // TODO: The documentation
@@ -396,14 +392,14 @@ func (l *Conn) DigestMd5Bind(digestMd5BindRequest *DigestMd5BindRequest) (*Diges
 
 	if len(packet.Children) == 3 {
 		for _, child := range packet.Children[2].Children {
-			result.Controls = append(result.Controls, DecodeControl(child))
+			decodedChild, decodeErr := DecodeControl(child)
+			if decodeErr != nil {
+				return nil, fmt.Errorf("failed to decode child control: %s", decodeErr)
+			}
+			result.Controls = append(result.Controls, decodedChild)
 		}
 	}
 
-	resultCode, resultDescription := getLDAPResultCode(packet)
-	if resultCode != 0 {
-		return result, NewError(resultCode, errors.New(resultDescription))
-	}
-
-	return result, nil
+	err = GetLDAPError(packet)
+	return result, err
 }
