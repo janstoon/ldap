@@ -48,13 +48,15 @@ const (
 	LDAPResultAffectsMultipleDSAs          = 71
 	LDAPResultOther                        = 80
 
-	ErrorNetwork            = 200
-	ErrorFilterCompile      = 201
-	ErrorFilterDecompile    = 202
-	ErrorDebugging          = 203
-	ErrorUnexpectedMessage  = 204
-	ErrorUnexpectedResponse = 205
-	ErrorEmptyPassword      = 206
+	ErrorNetwork               = 200
+	ErrorFilterCompile         = 201
+	ErrorFilterDecompile       = 202
+	ErrorDebugging             = 203
+	ErrorUnexpectedMessage     = 204
+	ErrorUnexpectedResponse    = 205
+	ErrorEmptyPassword         = 206
+	ErrorSaslNotSupported      = 207
+	ErrorMechanismNotSupported = 208
 )
 
 // LDAPResultCodeMap contains string descriptions for LDAP error codes
@@ -99,13 +101,15 @@ var LDAPResultCodeMap = map[uint8]string{
 	LDAPResultAffectsMultipleDSAs:          "Affects Multiple DSAs",
 	LDAPResultOther:                        "Other",
 
-	ErrorNetwork:            "Network Error",
-	ErrorFilterCompile:      "Filter Compile Error",
-	ErrorFilterDecompile:    "Filter Decompile Error",
-	ErrorDebugging:          "Debugging Error",
-	ErrorUnexpectedMessage:  "Unexpected Message",
-	ErrorUnexpectedResponse: "Unexpected Response",
-	ErrorEmptyPassword:      "Empty password not allowed by the client",
+	ErrorNetwork:               "Network Error",
+	ErrorFilterCompile:         "Filter Compile Error",
+	ErrorFilterDecompile:       "Filter Decompile Error",
+	ErrorDebugging:             "Debugging Error",
+	ErrorUnexpectedMessage:     "Unexpected Message",
+	ErrorUnexpectedResponse:    "Unexpected Response",
+	ErrorEmptyPassword:         "Empty password not allowed by the client",
+	ErrorSaslNotSupported:      "SASL not supported",
+	ErrorMechanismNotSupported: "Requested SASL mechanism not supported",
 }
 
 func getLDAPResultCode(packet *ber.Packet) (code uint8, description string) {

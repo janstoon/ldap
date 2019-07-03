@@ -14,6 +14,7 @@ type Client interface {
 
 	Bind(username, password string) error
 	SimpleBind(simpleBindRequest *SimpleBindRequest) (*SimpleBindResult, error)
+	DigestMd5Bind(digestMd5BindRequest *DigestMd5BindRequest) (*DigestMd5BindResult, error)
 
 	Add(addRequest *AddRequest) error
 	Del(delRequest *DelRequest) error
